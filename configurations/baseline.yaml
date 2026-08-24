@@ -1,1 +1,37 @@
+tank:
+  length: 6.0
+  width: 1.2
+  height: 0.8
+  compartments: 3
 
+fuel:
+  density: 800.0
+  fill_fraction: 0.60
+
+gravity: 9.81
+
+sensors:
+  - name: P1
+    x: 0.5
+    y: 0.6
+    z: 0.10
+
+  - name: P2
+    x: 2.0
+    y: 0.6
+    z: 0.10
+
+  - name: P3
+    x: 3.0
+    y: 0.6
+    z: 0.10
+
+  - name: P4
+    x: 4.0
+    y: 0.6
+    z: 0.10
+
+  - name: P5
+    x: 5.5
+    y: 0.6
+    z: 0.10
