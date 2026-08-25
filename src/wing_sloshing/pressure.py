@@ -1,5 +1,7 @@
 import numpy as np
 
+from .surface import free_surface
+
 
 def hydrostatic_pressure(
     sensor_x,
@@ -7,32 +9,26 @@ def hydrostatic_pressure(
     z0,
     acceleration,
     density,
-    gravity
+    gravity,
 ):
-    """
-    Quasi-static gauge pressure at a sensor.
 
-    The local free-surface elevation is:
 
-        z_fs = z0 - (a/g)x
-
-    Gauge pressure is:
-
-        p = rho g (z_fs - z_sensor)
-
-    Pressure is zero when the sensor is above the liquid.
-    """
-
-    z_free_surface = (
-        z0
-        - (acceleration / gravity) * sensor_x
+    z_free_surface = free_surface(
+        sensor_x,
+        z0,
+        acceleration,
+        gravity,
     )
 
-    pressure_head = z_free_surface - sensor_z
+    pressure_head = (
+        z_free_surface - sensor_z
+    )
 
     return max(
         0.0,
-        density * gravity * pressure_head
+        density
+        * gravity
+        * pressure_head,
     )
 
 
@@ -41,17 +37,10 @@ def sensor_pressures(
     z0,
     acceleration,
     density,
-    gravity
+    gravity,
 ):
     """
     Calculate pressure at multiple sensors.
-
-    sensors should be a dictionary:
-
-    {
-        "P1": {"x": ..., "z": ...},
-        ...
-    }
     """
 
     results = {}
@@ -64,7 +53,63 @@ def sensor_pressures(
             z0=z0,
             acceleration=acceleration,
             density=density,
-            gravity=gravity
+            gravity=gravity,
         )
 
     return results
+
+
+def maximum_pressure(
+    tank,
+    z0,
+    acceleration,
+    density,
+    gravity,
+    x_start=None,
+    x_end=None,
+    num_points=1000,
+):
+    """
+    Calculate the maximum hydrostatic pressure along
+    the lower surface of the selected tank region.
+    """
+
+    if x_start is None:
+        x_start = 0.0
+
+    if x_end is None:
+        x_end = tank.length
+
+    x = np.linspace(
+        x_start,
+        x_end,
+        num_points,
+    )
+
+    z_surface = free_surface(
+        x,
+        z0,
+        acceleration,
+        gravity,
+    )
+
+    local_height = tank.height(x)
+
+    fuel_present = (
+        z_surface > 0.0
+    )
+
+    pressure = np.where(
+        fuel_present,
+        density
+        * gravity
+        * np.maximum(
+            z_surface,
+            0.0,
+        ),
+        0.0,
+    )
+
+    return float(
+        np.max(pressure)
+    )
