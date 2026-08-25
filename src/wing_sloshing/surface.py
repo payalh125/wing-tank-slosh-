@@ -9,13 +9,7 @@ def free_surface(
     acceleration,
     gravity,
 ):
-    """
-    Quasi-static free-surface elevation.
-
-    The longitudinal acceleration produces a tilted free surface:
-
-        z(x) = z0 - (a / g) x
-    """
+  
 
     x = np.asarray(x)
 
@@ -32,12 +26,7 @@ def local_fuel_height(
     acceleration,
     gravity,
 ):
-    """
-    Fuel height at each longitudinal location.
-
-    The liquid height is clipped between zero and the
-    local tank height.
-    """
+    
 
     surface_height = free_surface(
         x,
@@ -67,8 +56,6 @@ def fuel_volume(
     """
     Calculate fuel volume for a specified free-surface intercept.
 
-    Parameters
-    ----------
     tank : TaperedTank
         Tank geometry.
 
@@ -129,11 +116,7 @@ def solve_free_surface(
     x_end=None,
     num_points=1000,
 ):
-    """
-    Solve for the free-surface intercept z0 that produces
-    the requested fuel volume.
-    """
-
+   
     if target_volume < 0.0:
         raise ValueError(
             "Target volume cannot be negative."
