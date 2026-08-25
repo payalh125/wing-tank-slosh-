@@ -1,6 +1,6 @@
 import numpy as np
 
-from .free_surface import liquid_depth
+from .surface import local_fuel_height
 
 
 def fuel_cg(
@@ -8,57 +8,70 @@ def fuel_cg(
     z0,
     acceleration,
     gravity,
-    x_start=0.0,
+    x_start=None,
     x_end=None,
-    num_points=3000
+    num_points=1000,
 ):
-    """
-    Calculate fuel centre of gravity.
 
-    The liquid cross-section is represented as a rectangular column
-    with local width w(x) and liquid depth d(x).
-    """
+    if x_start is None:
+        x_start = 0.0
 
     if x_end is None:
         x_end = tank.length
 
-    x = np.linspace(x_start, x_end, num_points)
+    x = np.linspace(
+        x_start,
+        x_end,
+        num_points,
+    )
 
-    width = tank.width(x)
-
-    depth = liquid_depth(
+    liquid_height = local_fuel_height(
         tank,
         x,
         z0,
         acceleration,
-        gravity
+        gravity,
     )
 
-    dV_dx = width * depth
+    width = tank.width(x)
 
-    volume = np.trapezoid(dV_dx, x)
+    differential_volume = (
+        width * liquid_height
+    )
+
+    volume = np.trapezoid(
+        differential_volume,
+        x,
+    )
 
     if volume <= 0.0:
-        raise ValueError("Fuel volume must be positive.")
+        raise ValueError(
+            "Fuel volume must be greater than zero."
+        )
 
-    x_moment = np.trapezoid(x * dV_dx, x)
-
-    y_centroid = width / 2.0
-
-    y_moment = np.trapezoid(
-        y_centroid * dV_dx,
-        x
-    )
-
-    z_centroid = depth / 2.0
-
-    z_moment = np.trapezoid(
-        z_centroid * dV_dx,
-        x
+    x_moment = np.trapezoid(
+        x * differential_volume,
+        x,
     )
 
     x_cg = x_moment / volume
-    y_cg = y_moment / volume
+
+    y_cg = 0.0
+
+    vertical_centroid = (
+        liquid_height / 2.0
+    )
+
+    z_moment = np.trapezoid(
+        vertical_centroid
+        * differential_volume,
+        x,
+    )
+
     z_cg = z_moment / volume
 
-    return x_cg, y_cg, z_cg, volume
+    return (
+        x_cg,
+        y_cg,
+        z_cg,
+    )
