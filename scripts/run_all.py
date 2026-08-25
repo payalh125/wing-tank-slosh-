@@ -1,25 +1,41 @@
-import run_static_analysis
-import run_acceleration
-import run_sections
+from pathlib import Path
+import subprocess
+import sys
+
+
+ROOT = Path(__file__).resolve().parent
+
+
+scripts = [
+    "run_static_analysis.py",
+    "run_acceleration.py",
+    "run_sections.py",
+    "run_vof_baseline.py",
+    "validate_vof.py",
+]
 
 
 def main():
 
+    for script in scripts:
+
+        print()
+        print("=" * 60)
+        print(f"RUNNING: {script}")
+        print("=" * 60)
+
+        subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / script),
+            ],
+            check=True,
+        )
+
     print()
-    print("=" * 70)
-    print("RUNNING COMPLETE WING TANK ANALYSIS")
-    print("=" * 70)
-
-    run_static_analysis.main()
-
-    run_acceleration.main()
-
-    run_sections.main()
-
-    print()
-    print("=" * 70)
-    print("ANALYSIS COMPLETED")
-    print("=" * 70)
+    print("=" * 60)
+    print("ALL ANALYSES COMPLETED")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
