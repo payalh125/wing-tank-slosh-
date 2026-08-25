@@ -1,0 +1,7 @@
+mass_error
+volume_error
+maximum_density_deviation
+maximum_particles_outside
+cg_excursion
+maximum_velocity
+maximum_pressure
