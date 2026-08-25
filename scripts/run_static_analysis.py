@@ -1,16 +1,25 @@
-import sys
-from pathlib import Path
-
-sys.path.append(
-    str(Path(__file__).resolve().parents[1] / "src")
+from wing_sloshing.geometry import (
+    TaperedTank,
 )
 
-from wing_sloshing.geometry import TaperedTank
-from wing_sloshing.fuel import Fuel
-from wing_sloshing.free_surface import solve_free_surface
-from wing_sloshing.cg import fuel_cg
+from wing_sloshing.surface import (
+    solve_free_surface,
+    fuel_volume,
+)
 
-from configurations.baseline_tank import *
+from wing_sloshing.cg import (
+    fuel_cg,
+)
+
+from configurations.baseline import (
+    TANK_LENGTH,
+    ROOT_WIDTH,
+    TIP_WIDTH,
+    ROOT_HEIGHT,
+    TIP_HEIGHT,
+    GRAVITY,
+    NUM_X,
+)
 
 
 def main():
@@ -20,49 +29,89 @@ def main():
         ROOT_WIDTH,
         TIP_WIDTH,
         ROOT_HEIGHT,
-        TIP_HEIGHT
+        TIP_HEIGHT,
     )
 
-    fuel = Fuel(FUEL_DENSITY)
+    total_volume = tank.volume(
+        NUM_X
+    )
 
-    tank_volume = tank.volume()
+    target_volume = (
+        0.60 * total_volume
+    )
 
+    z0 = solve_free_surface(
+        tank=tank,
+        target_volume=target_volume,
+        acceleration=0.0,
+        gravity=GRAVITY,
+        num_points=NUM_X,
+    )
+
+    calculated_volume = fuel_volume(
+        tank=tank,
+        z0=z0,
+        acceleration=0.0,
+        gravity=GRAVITY,
+        num_points=NUM_X,
+    )
+
+    x_cg, y_cg, z_cg = fuel_cg(
+        tank=tank,
+        z0=z0,
+        acceleration=0.0,
+        gravity=GRAVITY,
+        num_points=NUM_X,
+    )
+
+    volume_error = (
+        calculated_volume
+        - target_volume
+    )
+
+    print()
     print("=" * 60)
-    print("STATIC TAPERED WING TANK ANALYSIS")
+    print("STATIC FUEL DISTRIBUTION ANALYSIS")
     print("=" * 60)
 
-    print(f"\nTank volume = {tank_volume:.9f} m^3")
+    print(
+        f"Tank volume      = "
+        f"{total_volume:.9f} m^3"
+    )
 
-    for fill_fraction in FILL_FRACTIONS:
+    print(
+        f"Fuel volume      = "
+        f"{target_volume:.9f} m^3"
+    )
 
-        target_volume = fill_fraction * tank_volume
+    print(
+        f"Calculated volume = "
+        f"{calculated_volume:.9f} m^3"
+    )
 
-        z0 = solve_free_surface(
-            tank,
-            target_volume,
-            acceleration=0.0,
-            gravity=GRAVITY
-        )
+    print(
+        f"Volume error      = "
+        f"{volume_error:.12e} m^3"
+    )
 
-        x_cg, y_cg, z_cg, volume = fuel_cg(
-            tank,
-            z0,
-            acceleration=0.0,
-            gravity=GRAVITY
-        )
+    print()
 
-        mass = fuel.mass_from_volume(volume)
+    print(
+        f"Fuel XCG = "
+        f"{x_cg:.6f} m"
+    )
 
-        print("\n" + "-" * 60)
-        print(f"Fill fraction = {fill_fraction:.0%}")
+    print(
+        f"Fuel YCG = "
+        f"{y_cg:.6f} m"
+    )
 
-        print(f"Fuel volume = {volume:.9f} m^3")
-        print(f"Fuel mass   = {mass:.4f} kg")
-
-        print(f"X CG = {x_cg:.6f} m")
-        print(f"Y CG = {y_cg:.6f} m")
-        print(f"Z CG = {z_cg:.6f} m")
+    print(
+        f"Fuel ZCG = "
+        f"{z_cg:.6f} m"
+    )
 
 
 if __name__ == "__main__":
     main()
+
