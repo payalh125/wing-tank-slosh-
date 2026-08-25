@@ -1,13 +1,25 @@
-class Fuel:
+def fuel_mass(
+    volume,
+    density,
+):
     """
-    Fuel properties and basic mass calculations.
+    Calculate fuel mass from fuel volume.
     """
 
-    def __init__(self, density):
-        self.density = density
+    return volume * density
 
-    def mass_from_volume(self, volume):
-        return self.density * volume
 
-    def volume_from_mass(self, mass):
-        return mass / self.density
+def fuel_volume(
+    mass,
+    density,
+):
+    """
+    Calculate fuel volume from fuel mass.
+    """
+
+    if density <= 0.0:
+        raise ValueError(
+            "Fuel density must be greater than zero."
+        )
+
+    return mass / density
