@@ -1,0 +1,8 @@
+initialise_hydrostatic_state()
+relax_particles()
+compute_density()
+compute_pressure()
+compute_acceleration()
+apply_harmonic_excitation()
+advance_solution()
+run_sph_simulation()
